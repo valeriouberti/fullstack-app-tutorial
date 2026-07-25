@@ -29,9 +29,9 @@ out of scope. CloudFront/ALB are not reproduced — minikube's ingress plays tha
 
 ```
 full-stack-app/
-├── frontend/                  # existing Vite app
-├── backend/                   # existing Go app
-├── charts/                    # NEW — Helm charts ArgoCD watches
+├── frontend/                  # Vite app + Dockerfile (Phase 1)
+├── backend/                   # Go app + Dockerfile (Phase 1)
+├── charts/                    # Helm charts ArgoCD watches (Phase 3/4)
 │   ├── backend/
 │   │   ├── Chart.yaml
 │   │   ├── values.yaml        # image.repository, image.tag, replicaCount, etc.
@@ -45,10 +45,18 @@ full-stack-app/
 │           ├── deployment.yaml
 │           ├── service.yaml
 │           └── ingress.yaml   # templated, disabled via values until Ingress phase
+├── argocd/                    # ArgoCD Application definitions (Phase 6)
+│   ├── backend-application.yaml   # points repoURL + path=charts/backend
+│   └── frontend-application.yaml  # points repoURL + path=charts/frontend
 ├── .github/workflows/
-│   └── ci.yaml                # NEW — build/push images, bump values.yaml tags
-├── Dockerfile (in frontend/ and backend/)
+│   └── ci.yaml                # build/push images, bump values.yaml tags (Phase 7)
 ```
+
+`argocd/` is deliberately separate from `charts/` — it holds *cluster bootstrap* config (which
+Applications ArgoCD should track), not application config. You apply those two files once by
+hand (`kubectl apply -f argocd/`) to register the apps with ArgoCD; everything under `charts/`
+after that is what ArgoCD manages for you. Mixing the two together makes it harder to see which
+files are "install this once" vs. "this is what's actually deployed."
 
 One chart per app rather than a single umbrella chart with subcharts — two services is small
 enough that independent charts stay simple, and each gets its own ArgoCD `Application` (see
