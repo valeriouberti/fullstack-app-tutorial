@@ -39,7 +39,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	hostname, _ := os.Hostname()
 	resp := helloResponse{
-		Message:   "Hello from the backend",
+		Message:   "Hello from the backend 2",
 		Hostname:  hostname,
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
